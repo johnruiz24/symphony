@@ -119,19 +119,36 @@ defmodule SymphonyElixir.Config do
       is_nil(settings.tracker.kind) ->
         {:error, :missing_tracker_kind}
 
-      settings.tracker.kind not in ["linear", "memory"] ->
+      settings.tracker.kind not in ["linear", "memory", "jira"] ->
         {:error, {:unsupported_tracker_kind, settings.tracker.kind}}
 
-      settings.tracker.kind == "linear" and not is_binary(settings.tracker.api_key) ->
+      settings.tracker.kind in ["linear", "jira"] and not is_binary(settings.tracker.api_key) ->
         {:error, :missing_linear_api_token}
 
-      settings.tracker.kind == "linear" and not is_binary(settings.tracker.project_slug) ->
+      settings.tracker.kind in ["linear", "jira"] and not is_binary(settings.tracker.project_slug) ->
         {:error, :missing_linear_project_slug}
+
+      settings.tracker.kind == "jira" and not is_binary(settings.tracker.endpoint) ->
+        {:error, :missing_jira_endpoint}
+
+      settings.tracker.kind == "jira" and not valid_jira_endpoint?(settings.tracker.endpoint) ->
+        {:error, :invalid_jira_endpoint}
 
       true ->
         :ok
     end
   end
+
+  defp valid_jira_endpoint?(endpoint) when is_binary(endpoint) do
+    normalized_endpoint =
+      endpoint
+      |> String.trim()
+      |> String.downcase()
+
+    normalized_endpoint != "" and String.contains?(normalized_endpoint, "atlassian.net")
+  end
+
+  defp valid_jira_endpoint?(_endpoint), do: false
 
   defp format_config_error(reason) do
     case reason do

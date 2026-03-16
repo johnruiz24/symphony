@@ -110,6 +110,7 @@ Title: {{ issue.title }} Body: {{ issue.description }}
 Notes:
 
 - If a value is missing, defaults are used.
+- Supported tracker kinds: `linear`, `memory`, `jira` (PoC).
 - Safer Codex defaults are used when policy fields are omitted:
   - `codex.approval_policy` defaults to `{"reject":{"sandbox_approval":true,"rules":true,"mcp_elicitations":true}}`
   - `codex.thread_sandbox` defaults to `workspace-write`
@@ -128,6 +129,10 @@ Notes:
 - If a hook needs `mise exec` inside a freshly cloned workspace, trust the repo config and fetch
   the project dependencies in `hooks.after_create` before invoking `mise` later from other hooks.
 - `tracker.api_key` reads from `LINEAR_API_KEY` when unset or when value is `$LINEAR_API_KEY`.
+- In Jira mode (`tracker.kind: jira`), set:
+  - `tracker.endpoint` to your Jira base URL (for example `https://<org>.atlassian.net`)
+  - `tracker.api_key` as `email:api_token` (Basic Auth payload)
+  - `tracker.project_slug` as your Jira project key (for example `PLAT`)
 - For path values, `~` is expanded to the home directory.
 - For env-backed path values, use `$VAR`. `workspace.root` resolves `$VAR` before path handling,
   while `codex.command` stays a shell command string and any `$VAR` expansion there happens in the
@@ -150,6 +155,15 @@ codex:
   reload error until the file is fixed.
 - `server.port` or CLI `--port` enables the optional Phoenix LiveView dashboard and JSON API at
   `/`, `/api/v1/state`, `/api/v1/<issue_identifier>`, and `/api/v1/refresh`.
+
+### Publish Jira cards from a validated plan (PoC)
+
+```bash
+cd elixir
+mix jira.plan.publish --plan ../docs/plans/<plan-file>.md --issue <parent-jira-key>
+```
+
+This command publishes checked checklist items (`- [x] ...`) as Jira cards.
 
 ## Web dashboard
 
