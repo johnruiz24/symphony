@@ -238,9 +238,9 @@
             </div>
 
             <div class="controls">
-                <button id="prevBtn" onclick="previousFrame()">← Previous</button>
-                <button id="playBtn" onclick="toggleAutoplay()">▶ Play</button>
-                <button id="nextBtn" onclick="nextFrame()">Next →</button>
+                <button id="prevBtn">← Previous</button>
+                <button id="playBtn">▶ Play</button>
+                <button id="nextBtn">Next →</button>
             </div>
 
             <div class="info-grid">
@@ -260,7 +260,7 @@
         </div>
 
         <footer>
-            <p>All 21 frames are REAL screenshots from the live system running on localhost:3000</p>
+            <p>All 15 frames are REAL screenshots from the live system running on localhost:3000</p>
             <p>💡 No fake images, no recordings, no simulations - just actual browser captures</p>
         </footer>
     </div>
@@ -350,14 +350,28 @@
         let autoplaySpeed = 2000; // 2 seconds
 
         function updateFrame(frameNum) {
+            console.log('updateFrame called with:', frameNum, 'frames.length:', frames.length);
             currentFrame = Math.max(1, Math.min(frames.length, frameNum));
             const frame = frames[currentFrame - 1];
+            console.log('Updated currentFrame to:', currentFrame, 'frame:', frame);
 
-            document.getElementById('frameNumber').textContent = currentFrame;
-            document.getElementById('frameImage').src = `screenshots/${frame.file}`;
-            document.getElementById('frameImage').alt = frame.title;
-            document.getElementById('frameTitle').textContent = frame.title;
-            document.getElementById('frameDescription').textContent = frame.desc;
+            // Debug: check if elements exist
+            const frameNumEl = document.getElementById('frameNumber');
+            const frameImageEl = document.getElementById('frameImage');
+            console.log('frameNumber element:', frameNumEl);
+            console.log('frameImage element:', frameImageEl);
+
+            if (frameNumEl) frameNumEl.textContent = currentFrame;
+            if (frameImageEl) {
+                frameImageEl.src = `screenshots/${frame.file}`;
+                frameImageEl.alt = frame.title;
+            }
+
+            const frameTitleEl = document.getElementById('frameTitle');
+            const frameDescEl = document.getElementById('frameDescription');
+            if (frameTitleEl) frameTitleEl.textContent = frame.title;
+            if (frameDescEl) frameDescEl.textContent = frame.desc;
+
             document.getElementById('frameSlider').value = currentFrame;
             document.getElementById('frameSlider').max = frames.length;
 
@@ -370,10 +384,12 @@
         }
 
         function nextFrame() {
+            console.log('nextFrame called, currentFrame:', currentFrame);
             updateFrame(currentFrame + 1);
         }
 
         function previousFrame() {
+            console.log('previousFrame called, currentFrame:', currentFrame);
             updateFrame(currentFrame - 1);
         }
 
@@ -385,7 +401,7 @@
                 btn.textContent = '⏸ Pause';
                 btn.style.background = '#764ba2';
                 autoplayInterval = setInterval(() => {
-                    if (currentFrame < 21) {
+                    if (currentFrame < frames.length) {
                         nextFrame();
                     } else {
                         autoplay = false;
@@ -431,6 +447,11 @@
 
         // Initialize
         updateFrame(1);
+
+        // Add event listeners (more reliable than onclick)
+        document.getElementById('prevBtn').addEventListener('click', previousFrame);
+        document.getElementById('playBtn').addEventListener('click', toggleAutoplay);
+        document.getElementById('nextBtn').addEventListener('click', nextFrame);
     </script>
 </body>
 </html>
