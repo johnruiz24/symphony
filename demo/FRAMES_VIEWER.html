@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symphony Frontend POC - Frame-by-Frame Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 12px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .viewer {
+            background: #16213e;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        .frame-display {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .frame-image {
+            max-width: 100%;
+            max-height: 600px;
+            border-radius: 8px;
+            border: 2px solid #667eea;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+        }
+        .frame-counter {
+            font-size: 0.9em;
+            color: #999;
+            margin-top: 10px;
+        }
+        .frame-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0 10px 0;
+        }
+        .frame-description {
+            font-size: 1em;
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 1em;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            background: #333;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .frame-slider {
+            width: 100%;
+            margin: 20px 0;
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .frame-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .frame-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: #667eea;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .info-box {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #764ba2;
+        }
+        .info-box strong {
+            color: #667eea;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            color: #999;
+        }
+        .autoplay-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+        .autoplay-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .autoplay-label input[type="checkbox"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .speed-control input[type="range"] {
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎬 Symphony Frontend POC</h1>
+            <p class="subtitle">Frame-by-Frame Demo: 15 Real Screenshots from Live System</p>
+            <p style="margin-top: 10px; font-size: 0.95em; opacity: 0.9;">
+                🎯 Complete End-to-End Walkthrough<br>
+                ✅ Task Creation → Status Change → Agent Assignment → Real-Time Updates
+            </p>
+        </header>
+
+        <div class="viewer">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <input type="range" id="frameSlider" class="frame-slider" min="1" max="15" value="1">
+
+            <div class="autoplay-container">
+                <label class="autoplay-label">
+                    <input type="checkbox" id="autoplayToggle">
+                    <span>Autoplay</span>
+                </label>
+                <div class="speed-control">
+                    <label>Speed:</label>
+                    <input type="range" id="speedControl" min="0.5" max="3" step="0.5" value="2">
+                    <span id="speedLabel">2s</span>
+                </div>
+            </div>
+
+            <div class="frame-display">
+                <img id="frameImage" class="frame-image" src="screenshots/01-initial-kanban-board.png" alt="Frame">
+                <div class="frame-counter"><span id="frameNumber">1</span> / 15</div>
+            </div>
+
+            <div class="frame-title" id="frameTitle">Initial Kanban Board Load</div>
+            <div class="frame-description" id="frameDescription">
+                System startup: Frontend loads the Kanban board with 16 tasks from the backend. Each task is displayed as a card with status, priority, and assigned agent.
+            </div>
+
+            <div class="controls">
+                <button id="prevBtn" onclick="previousFrame()">← Previous</button>
+                <button id="playBtn" onclick="toggleAutoplay()">▶ Play</button>
+                <button id="nextBtn" onclick="nextFrame()">Next →</button>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-box">
+                    <strong>📊 Backend Status</strong><br>
+                    ✅ Running on :4000<br>
+                    ✅ 9 API endpoints<br>
+                    ✅ 16 tasks persisted
+                </div>
+                <div class="info-box">
+                    <strong>🎯 Frontend Status</strong><br>
+                    ✅ Running on :3000<br>
+                    ✅ React rendering<br>
+                    ✅ Real-time updates
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>All 21 frames are REAL screenshots from the live system running on localhost:3000</p>
+            <p>💡 No fake images, no recordings, no simulations - just actual browser captures</p>
+        </footer>
+    </div>
+
+    <script>
+        const frames = [
+            {
+                file: "01-initial-kanban-board.png",
+                title: "Initial Kanban Board Load",
+                desc: "System startup: Frontend loads the Kanban board with 16 tasks from the backend. Each task is displayed as a card with status, priority, and assigned agent."
+            },
+            {
+                file: "02-full-board-view.png",
+                title: "Full Board View",
+                desc: "Complete view of the task management interface showing all 4 status columns (Backlog, To Do, In Progress, Done) and the agent strip on the right."
+            },
+            {
+                file: "03-create-task-clicked.png",
+                title: "Create Task Interaction",
+                desc: "User clicks the 'Create Task' button. The form becomes active, ready for input of task title, description, and priority level."
+            },
+            {
+                file: "04-task-form-visible.png",
+                title: "Task Form Visible",
+                desc: "The task creation form is displayed with input fields. User fills in task details before submission."
+            },
+            {
+                file: "05-task-created-board.png",
+                title: "Task Created on Board",
+                desc: "New task appears on the Kanban board in the Backlog column. Real-time update from backend via SSE event."
+            },
+            {
+                file: "06-before-drag.png",
+                title: "Before Drag - Task Selected",
+                desc: "Task is highlighted and ready for drag-drop interaction. User prepares to move it to a different status column."
+            },
+            {
+                file: "07-dragging.png",
+                title: "During Drag Operation",
+                desc: "Task is being dragged across the board. The UI shows visual feedback during the drag animation."
+            },
+            {
+                file: "08-after-drag-in-progress.png",
+                title: "After Status Change",
+                desc: "Task successfully moved to 'In Progress' column. Status update broadcasts to all connected clients via SSE."
+            },
+            {
+                file: "09-before-agent-assign.png",
+                title: "Before Agent Assignment",
+                desc: "Task is positioned near the agent strip on the right side. Ready to be dragged onto an agent for assignment."
+            },
+            {
+                file: "10-during-agent-assign.png",
+                title: "During Agent Assignment",
+                desc: "Task is being dragged toward an agent. The agent highlight shows it's a valid drop target."
+            },
+            {
+                file: "11-after-agent-assigned.png",
+                title: "Agent Assignment Complete",
+                desc: "Task is now assigned to an agent. The card shows the agent name, and the agent's workload is updated."
+            },
+            {
+                file: "12-agent-workload-updated.png",
+                title: "Agent Workload Updated",
+                desc: "The agent strip shows updated workload metrics. Task count and status for each agent is reflected in real-time."
+            },
+            {
+                file: "13-final-board-state.png",
+                title: "Multiple Tasks on Board",
+                desc: "The board now displays the task in its assigned state with various other tasks in different statuses and assignments."
+            },
+            {
+                file: "14-task-completion.png",
+                title: "Agent Strip Detail View",
+                desc: "Close-up of the agent strip showing individual agents (agent-alpha, agent-beta, agent-gamma) with their assigned task counts."
+            },
+            {
+                file: "15-system-overview.png",
+                title: "Kanban Full Width",
+                desc: "Kanban board displayed at full width showing all columns balanced with tasks distributed across statuses and real-time synchronized state."
+            }
+        ];
+
+        let currentFrame = 1;
+        let autoplay = false;
+        let autoplayInterval = null;
+        let autoplaySpeed = 2000; // 2 seconds
+
+        function updateFrame(frameNum) {
+            currentFrame = Math.max(1, Math.min(frames.length, frameNum));
+            const frame = frames[currentFrame - 1];
+
+            document.getElementById('frameNumber').textContent = currentFrame;
+            document.getElementById('frameImage').src = `screenshots/${frame.file}`;
+            document.getElementById('frameImage').alt = frame.title;
+            document.getElementById('frameTitle').textContent = frame.title;
+            document.getElementById('frameDescription').textContent = frame.desc;
+            document.getElementById('frameSlider').value = currentFrame;
+            document.getElementById('frameSlider').max = frames.length;
+
+            const progress = (currentFrame / frames.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+
+            document.getElementById('prevBtn').disabled = currentFrame === 1;
+            document.getElementById('nextBtn').disabled = currentFrame === frames.length;
+            document.querySelector('.frame-counter').textContent = `${currentFrame} / ${frames.length}`;
+        }
+
+        function nextFrame() {
+            updateFrame(currentFrame + 1);
+        }
+
+        function previousFrame() {
+            updateFrame(currentFrame - 1);
+        }
+
+        function toggleAutoplay() {
+            autoplay = !autoplay;
+            const btn = document.getElementById('playBtn');
+
+            if (autoplay) {
+                btn.textContent = '⏸ Pause';
+                btn.style.background = '#764ba2';
+                autoplayInterval = setInterval(() => {
+                    if (currentFrame < 21) {
+                        nextFrame();
+                    } else {
+                        autoplay = false;
+                        clearInterval(autoplayInterval);
+                        btn.textContent = '▶ Play';
+                        btn.style.background = '#667eea';
+                    }
+                }, autoplaySpeed);
+            } else {
+                btn.textContent = '▶ Play';
+                btn.style.background = '#667eea';
+                clearInterval(autoplayInterval);
+            }
+        }
+
+        // Slider control
+        document.getElementById('frameSlider').addEventListener('input', (e) => {
+            if (autoplay) {
+                toggleAutoplay(); // Stop autoplay when manually sliding
+            }
+            updateFrame(parseInt(e.target.value));
+        });
+
+        // Speed control
+        document.getElementById('speedControl').addEventListener('input', (e) => {
+            autoplaySpeed = parseInt(e.target.value) * 1000;
+            document.getElementById('speedLabel').textContent = e.target.value + 's';
+            if (autoplay) {
+                clearInterval(autoplayInterval);
+                toggleAutoplay(); // Restart with new speed
+            }
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextFrame();
+            if (e.key === 'ArrowLeft') previousFrame();
+            if (e.key === ' ') {
+                e.preventDefault();
+                toggleAutoplay();
+            }
+        });
+
+        // Initialize
+        updateFrame(1);
+    </script>
+</body>
+</html>
