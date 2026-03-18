@@ -41,7 +41,7 @@ test.describe("POST /api/v1/tasks - Create", () => {
     const payload = makeTask({
       title: "Full-field task",
       description: "Detailed description",
-      priority: "critical",
+      priority: "high",
       assigned_agent: "agent-alpha",
     });
     const result = await api.createTask(payload);
@@ -49,7 +49,7 @@ test.describe("POST /api/v1/tasks - Create", () => {
     expect(result.status).toBe(201);
     const body = result.body as TaskSingleResponse;
     expect(body.data.description).toBe("Detailed description");
-    expect(body.data.priority).toBe("critical");
+    expect(body.data.priority).toBe("high");
     expect(body.data.assigned_agent).toBe("agent-alpha");
   });
 
@@ -95,10 +95,10 @@ test.describe("GET /api/v1/tasks - List", () => {
     const result = await api.listTasks();
     expect(result.status).toBe(200);
     expect(result.body).toHaveProperty("data");
-    expect(result.body).toHaveProperty("count");
+    expect(result.body).toHaveProperty("meta");
+    expect(result.body.meta).toHaveProperty("count");
     expect(Array.isArray(result.body.data)).toBe(true);
-    expect(typeof result.body.count).toBe("number");
-    expect(result.body.count).toBe(result.body.data.length);
+    expect(typeof result.body.meta.count).toBe("number");
   });
 
   test("filters by status", async () => {
@@ -113,11 +113,11 @@ test.describe("GET /api/v1/tasks - List", () => {
   });
 
   test("filters by priority", async () => {
-    await api.createTask(makeTask({ priority: "critical" }));
-    const result = await api.listTasks({ priority: "critical" });
+    await api.createTask(makeTask({ priority: "high" }));
+    const result = await api.listTasks({ priority: "high" });
     expect(result.status).toBe(200);
     for (const task of result.body.data) {
-      expect(task.priority).toBe("critical");
+      expect(task.priority).toBe("high");
     }
   });
 

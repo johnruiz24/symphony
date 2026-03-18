@@ -37,7 +37,8 @@ test.describe("SSE real-time updates", () => {
   test("task status change reflects in UI in real-time", async ({ page, request }) => {
     api = new SymphonyAPI(request);
 
-    const created = await api.createTask(makeTask({ title: "SSE Status Change" }));
+    const uniqueTitle = `SSE Status Change ${Date.now()}`;
+    const created = await api.createTask(makeTask({ title: uniqueTitle }));
     if (created.status !== 201) {
       test.skip();
       return;
@@ -49,7 +50,7 @@ test.describe("SSE real-time updates", () => {
     await page.waitForTimeout(2000);
 
     // The task should initially appear (in Backlog column)
-    await expect(page.getByText("SSE Status Change")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(uniqueTitle)).toBeVisible({ timeout: 10_000 });
 
     // Update status via API -- this broadcasts task_updated SSE event
     await api.updateTask(taskId, { status: "in_progress" });
@@ -58,7 +59,7 @@ test.describe("SSE real-time updates", () => {
     // and the task should eventually appear near it
     // (we verify the task is still visible post-update)
     await page.waitForTimeout(3000);
-    await expect(page.getByText("SSE Status Change")).toBeVisible();
+    await expect(page.getByText(uniqueTitle)).toBeVisible();
   });
 
   test("measures SSE event to UI render latency", async ({ page, request }) => {

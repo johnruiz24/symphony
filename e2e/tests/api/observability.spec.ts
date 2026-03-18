@@ -121,7 +121,7 @@ test.describe("POST /api/v1/refresh", () => {
 
     if (result.status === 202) {
       expect(result.body).toHaveProperty("requested_at");
-      expect(result.body).toHaveProperty("status", "scheduled");
+      expect(result.body).toHaveProperty("queued", true);
     }
     if (result.status === 503) {
       expect(result.body.error.code).toBe("orchestrator_unavailable");

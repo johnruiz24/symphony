@@ -4,7 +4,7 @@ import type { CreateTaskPayload } from "./api-client";
  * Reusable test data factories for Symphony E2E tests.
  * Field names and values match the actual backend:
  *   - Statuses: backlog, todo, in_progress, done (from task_controller.ex @valid_statuses)
- *   - Priorities: low, medium, high, critical (from task_controller.ex @valid_priorities)
+ *   - Priorities: low, medium, high, urgent (from task_controller.ex @valid_priorities)
  *   - Assignee field: assigned_agent (from task_store.ex type)
  */
 
@@ -37,5 +37,5 @@ export function makeBulkTasks(count: number, overrides?: Partial<CreateTaskPaylo
   );
 }
 
-export const PRIORITIES = ["low", "medium", "high", "critical"] as const;
+export const PRIORITIES = ["low", "medium", "high", "urgent"] as const;
 export const STATUSES = ["backlog", "todo", "in_progress", "done"] as const;

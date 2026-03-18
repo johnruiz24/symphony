@@ -16,17 +16,17 @@ export interface Task {
   title: string;
   description: string | null;
   status: "backlog" | "todo" | "in_progress" | "done";
-  priority: "low" | "medium" | "high" | "critical";
+  priority: "low" | "medium" | "high" | "urgent";
   assigned_agent: string | null;
   tags: string[];
   created_at: string;
   updated_at: string;
 }
 
-/** GET /api/v1/tasks returns {data: Task[], count: number} */
+/** GET /api/v1/tasks returns {data: Task[], meta: {count: number, next_cursor: string|null}} */
 export interface TaskListResponse {
   data: Task[];
-  count: number;
+  meta: { count: number; next_cursor: string | null };
 }
 
 /** GET/POST/PATCH /api/v1/tasks/:id returns {data: Task} */
@@ -78,10 +78,10 @@ export interface Agent {
   last_event_at: string | null;
 }
 
-/** GET /api/v1/agents returns {data: Agent[], count: number} */
+/** GET /api/v1/agents returns {data: Agent[], meta: {count: number, snapshot_at: string}} */
 export interface AgentListResponse {
   data: Agent[];
-  count: number;
+  meta: { count: number; snapshot_at: string };
 }
 
 // ---------- SSE types (from EventController.send_sse_event/3) ----------

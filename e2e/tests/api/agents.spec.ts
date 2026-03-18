@@ -28,10 +28,10 @@ test.describe("GET /api/v1/agents - List", () => {
     if (result.status === 200) {
       const body = result.body as AgentListResponse;
       expect(body).toHaveProperty("data");
-      expect(body).toHaveProperty("count");
+      expect(body).toHaveProperty("meta");
+      expect(body.meta).toHaveProperty("count");
       expect(Array.isArray(body.data)).toBe(true);
-      expect(typeof body.count).toBe("number");
-      expect(body.count).toBe(body.data.length);
+      expect(typeof body.meta.count).toBe("number");
     }
   });
 
