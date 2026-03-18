@@ -27,24 +27,28 @@ export function useSSE() {
         }
       };
 
-      es.addEventListener('task:created', () => {
+      es.addEventListener('task_created', () => {
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
       });
 
-      es.addEventListener('task:updated', () => {
+      es.addEventListener('task_updated', () => {
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
       });
 
-      es.addEventListener('task:deleted', () => {
+      es.addEventListener('task_deleted', () => {
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
       });
 
-      es.addEventListener('task:reassigned', () => {
+      es.addEventListener('task_reassigned', () => {
         queryClient.invalidateQueries({ queryKey: ['tasks'] });
         queryClient.invalidateQueries({ queryKey: ['agents'] });
       });
 
-      es.addEventListener('agent:updated', () => {
+      es.addEventListener('agent_state_changed', () => {
+        queryClient.invalidateQueries({ queryKey: ['agents'] });
+      });
+
+      es.addEventListener('agent_workload_changed', () => {
         queryClient.invalidateQueries({ queryKey: ['agents'] });
       });
 

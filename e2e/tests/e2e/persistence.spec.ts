@@ -1,16 +1,11 @@
 import { test, expect } from "@playwright/test";
-import { SymphonyAPI } from "../../helpers/api-client";
+import { SymphonyAPI, TaskSingleResponse, TaskListResponse } from "../../helpers/api-client";
 import { makeTask } from "../../helpers/test-data";
 
 /**
  * E2E tests for task persistence (Flow 4).
- *
- * Test Scenario:
- *   Flow 4: Task persists + survives restart
- *
- * Note: Full restart testing requires the backend to be stopped and restarted,
- * which is handled by the persistence-via-DynamoDB layer. These tests validate
- * that data survives page refreshes and is consistent across API calls.
+ * Validates data survives page refreshes and is consistent across API calls.
+ * Uses actual response shapes: {data: Task} and {data: Task[], count: N}.
  */
 
 let api: SymphonyAPI;
@@ -23,7 +18,6 @@ test.describe("Flow 4: Task persistence", () => {
   test("task persists across page refreshes", async ({ page, request }) => {
     api = new SymphonyAPI(request);
 
-    // Create a task via API
     const uniqueTitle = `Persist_${Date.now()}`;
     const created = await api.createTask(makeTask({ title: uniqueTitle }));
     if (created.status !== 201) {
@@ -31,14 +25,10 @@ test.describe("Flow 4: Task persistence", () => {
       return;
     }
 
-    // Load the page
     await page.goto("/");
     await expect(page.getByText(uniqueTitle)).toBeVisible({ timeout: 10_000 });
 
-    // Refresh the page
     await page.reload();
-
-    // Task should still be visible
     await expect(page.getByText(uniqueTitle)).toBeVisible({ timeout: 10_000 });
   });
 
@@ -51,19 +41,24 @@ test.describe("Flow 4: Task persistence", () => {
       return;
     }
 
+    const createdData = (created.body as TaskSingleResponse).data;
+
     // Get from list
     const listResult = await api.listTasks();
-    const fromList = listResult.body.find((t) => t.id === created.body.id);
+    const listBody = listResult.body as TaskListResponse;
+    const fromList = listBody.data.find((t) => t.id === createdData.id);
     expect(fromList).toBeTruthy();
 
     // Get from detail
-    const detailResult = await api.getTask(created.body.id);
+    const detailResult = await api.getTask(createdData.id);
     expect(detailResult.status).toBe(200);
+    const fromDetail = (detailResult.body as TaskSingleResponse).data;
 
     // Compare key fields
-    expect(detailResult.body.title).toBe(fromList!.title);
-    expect(detailResult.body.status).toBe(fromList!.status);
-    expect(detailResult.body.priority).toBe(fromList!.priority);
+    expect(fromDetail.title).toBe(fromList!.title);
+    expect(fromDetail.status).toBe(fromList!.status);
+    expect(fromDetail.priority).toBe(fromList!.priority);
+    expect(fromDetail.assigned_agent).toBe(fromList!.assigned_agent);
   });
 
   test("updated task reflects changes immediately", async () => {
@@ -73,14 +68,18 @@ test.describe("Flow 4: Task persistence", () => {
       return;
     }
 
-    await api.updateTask(created.body.id, {
+    const createdData = (created.body as TaskSingleResponse).data;
+
+    await api.updateTask(createdData.id, {
       status: "in_progress",
-      assignee: "agent-persist-test",
+      assigned_agent: "agent-persist-test",
     });
 
     // Immediately read back
-    const result = await api.getTask(created.body.id);
-    expect(result.body.status).toBe("in_progress");
-    expect(result.body.assignee).toBe("agent-persist-test");
+    const result = await api.getTask(createdData.id);
+    expect(result.status).toBe(200);
+    const data = (result.body as TaskSingleResponse).data;
+    expect(data.status).toBe("in_progress");
+    expect(data.assigned_agent).toBe("agent-persist-test");
   });
 });

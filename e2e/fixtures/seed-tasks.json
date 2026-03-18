@@ -4,69 +4,69 @@
     "description": "Add JWT-based authentication to the API layer",
     "priority": "critical",
     "status": "in_progress",
-    "assignee": "agent-alpha"
+    "assigned_agent": "agent-alpha"
   },
   {
     "title": "Set up CI/CD pipeline",
     "description": "Configure GitHub Actions for automated testing and deployment",
     "priority": "high",
-    "status": "pending",
-    "assignee": null
+    "status": "backlog",
+    "assigned_agent": null
   },
   {
     "title": "Write API documentation",
     "description": "Create OpenAPI spec for all endpoints",
     "priority": "medium",
-    "status": "completed",
-    "assignee": "agent-beta"
+    "status": "done",
+    "assigned_agent": "agent-beta"
   },
   {
     "title": "Fix dashboard layout on mobile",
     "description": "Kanban columns should stack vertically on small screens",
     "priority": "low",
-    "status": "pending",
-    "assignee": null
+    "status": "backlog",
+    "assigned_agent": null
   },
   {
     "title": "Add rate limiting to API",
     "description": "Implement rate limiting middleware for public endpoints",
     "priority": "high",
-    "status": "pending",
-    "assignee": null
+    "status": "todo",
+    "assigned_agent": null
   },
   {
     "title": "Database migration tooling",
     "description": "Set up DynamoDB table migration scripts",
     "priority": "medium",
     "status": "in_progress",
-    "assignee": "agent-gamma"
+    "assigned_agent": "agent-gamma"
   },
   {
     "title": "Implement SSE endpoint",
     "description": "Server-Sent Events for real-time dashboard updates",
     "priority": "critical",
     "status": "in_progress",
-    "assignee": "agent-alpha"
+    "assigned_agent": "agent-alpha"
   },
   {
     "title": "Add error boundary components",
     "description": "React error boundaries for graceful failure handling",
     "priority": "medium",
-    "status": "pending",
-    "assignee": null
+    "status": "backlog",
+    "assigned_agent": null
   },
   {
     "title": "Performance profiling",
     "description": "Profile API response times under load",
     "priority": "high",
-    "status": "pending",
-    "assignee": null
+    "status": "todo",
+    "assigned_agent": null
   },
   {
     "title": "Write E2E tests",
     "description": "Playwright tests for all major user flows",
     "priority": "high",
     "status": "in_progress",
-    "assignee": "agent-delta"
+    "assigned_agent": "agent-delta"
   }
 ]

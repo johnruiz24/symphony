@@ -256,8 +256,11 @@ Once started with `--port`, the following endpoints become available:
 | URL | Description |
 |-----|-------------|
 | `http://localhost:4000/` | Phoenix LiveView dashboard |
-| `http://localhost:4000/api/v1/state` | JSON API -- full orchestrator state |
-| `http://localhost:4000/api/v1/:identifier` | JSON API -- single issue detail |
+| `http://localhost:4000/api/v1/health` | Health check |
+| `http://localhost:4000/api/v1/tasks` | Task CRUD API |
+| `http://localhost:4000/api/v1/agents` | Agent state API |
+| `http://localhost:4000/api/v1/events` | SSE real-time stream |
+| `http://localhost:4000/api/v1/state` | Orchestrator state snapshot |
 
 Test with curl:
 

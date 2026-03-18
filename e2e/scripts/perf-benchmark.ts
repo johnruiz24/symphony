@@ -93,6 +93,7 @@ async function benchmarkTaskCreation(count: number): Promise<LatencyStats> {
         title: `Perf Task ${i}`,
         description: `Performance test task #${i}`,
         priority: ["low", "medium", "high", "critical"][i % 4],
+        status: "backlog",
       }),
     });
     if (resp.status === 201) latencies.push(ms);

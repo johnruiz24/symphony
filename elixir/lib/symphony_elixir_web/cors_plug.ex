@@ -25,7 +25,7 @@ defmodule SymphonyElixirWeb.CorsPlug do
   defp put_cors_headers(conn) do
     conn
     |> put_resp_header("access-control-allow-origin", allowed_origin())
-    |> put_resp_header("access-control-allow-methods", "GET, POST, PATCH, OPTIONS")
+    |> put_resp_header("access-control-allow-methods", "GET, POST, PATCH, DELETE, OPTIONS")
     |> put_resp_header("access-control-allow-headers", "content-type, authorization")
     |> put_resp_header("access-control-max-age", "3600")
   end

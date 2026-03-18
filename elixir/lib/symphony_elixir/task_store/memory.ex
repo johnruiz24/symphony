@@ -7,6 +7,8 @@ defmodule SymphonyElixir.TaskStore.Memory do
 
   @behaviour SymphonyElixir.TaskStore
 
+  @mutable_fields ~w(title description status priority assigned_agent tags source)
+
   @spec start_link(keyword()) :: Agent.on_start()
   def start_link(opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
@@ -70,11 +72,12 @@ defmodule SymphonyElixir.TaskStore.Memory do
           now = DateTime.utc_now() |> DateTime.truncate(:second) |> DateTime.to_iso8601()
 
           updated =
-            attrs
-            |> Map.drop(["version"])
-            |> Enum.reduce(task, fn {key, value}, acc ->
-              atom_key = if is_binary(key), do: String.to_existing_atom(key), else: key
-              Map.put(acc, atom_key, value)
+            @mutable_fields
+            |> Enum.reduce(task, fn field, acc ->
+              case Map.get(attrs, field) do
+                nil -> acc
+                value -> Map.put(acc, String.to_atom(field), value)
+              end
             end)
             |> Map.put(:updated_at, now)
             |> Map.update!(:version, &(&1 + 1))

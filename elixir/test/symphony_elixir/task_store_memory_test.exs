@@ -113,4 +113,11 @@ defmodule SymphonyElixir.TaskStore.MemoryTest do
   test "delete_task returns error for missing id" do
     assert {:error, :not_found} = Memory.delete_task("nonexistent")
   end
+
+  test "update_task ignores unknown fields without crashing" do
+    {:ok, task} = Memory.create_task(%{"title" => "Safe"})
+    {:ok, updated} = Memory.update_task(task.id, %{"unknown_field" => "malicious", "title" => "Still Safe"})
+    assert updated.title == "Still Safe"
+    refute Map.has_key?(updated, :unknown_field)
+  end
 end

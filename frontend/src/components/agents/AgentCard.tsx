@@ -22,7 +22,7 @@ export const AgentCard = memo(function AgentCard({ agent, isOver }: AgentCardPro
         <span title="Queued tasks">{agent.workload.queued} queued</span>
         <span title="Completed tasks">{agent.workload.completed} done</span>
       </div>
-      <span className="text-xs text-muted">{formatUptime(agent.uptime)}</span>
+      <span className="text-xs text-muted">{formatUptime(agent.uptime_seconds)}</span>
     </div>
   );
 });

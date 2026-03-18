@@ -20,7 +20,17 @@ export async function apiFetch<T>(
     ...options,
   });
 
-  const data = await resp.json();
+  let data;
+  try {
+    data = await resp.json();
+  } catch {
+    // Non-JSON response (HTML error page, plain text, etc.)
+    throw new ApiError(
+      resp.status,
+      'parse_error',
+      `Server returned non-JSON response (${resp.status})`
+    );
+  }
 
   if (!resp.ok) {
     throw new ApiError(

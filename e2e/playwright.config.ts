@@ -1,7 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const BASE_URL = process.env.BASE_URL ?? "http://localhost:4000";
-const API_URL = process.env.API_URL ?? BASE_URL;
+// Frontend dev server (Vite on port 3000, proxies /api to backend)
+const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:3000";
+// Backend API directly (Elixir on port 4000)
+const API_URL = process.env.API_URL ?? "http://localhost:4000";
 
 export default defineConfig({
   testDir: "./tests",
@@ -17,13 +19,13 @@ export default defineConfig({
   expect: { timeout: 5_000 },
 
   use: {
-    baseURL: BASE_URL,
+    baseURL: FRONTEND_URL,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
 
   projects: [
-    // API contract tests -- no browser needed
+    // API contract tests -- no browser needed, hit backend directly
     {
       name: "api",
       testDir: "./tests/api",
@@ -38,7 +40,7 @@ export default defineConfig({
       testDir: "./tests/e2e",
       use: {
         ...devices["Desktop Chrome"],
-        baseURL: BASE_URL,
+        baseURL: FRONTEND_URL,
       },
     },
 
@@ -48,7 +50,7 @@ export default defineConfig({
       testDir: "./tests/e2e",
       use: {
         ...devices["Desktop Firefox"],
-        baseURL: BASE_URL,
+        baseURL: FRONTEND_URL,
       },
     },
   ],
@@ -57,7 +59,15 @@ export default defineConfig({
   webServer: [
     {
       command: "cd ../elixir && ./bin/symphony --port 4000 ./WORKFLOW.md",
-      url: `${BASE_URL}/api/v1/state`,
+      url: `${API_URL}/api/v1/state`,
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+      stdout: "pipe",
+      stderr: "pipe",
+    },
+    {
+      command: "cd ../frontend && npm run dev",
+      url: FRONTEND_URL,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
       stdout: "pipe",

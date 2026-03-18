@@ -30,7 +30,7 @@ export function AppShell() {
         const q = searchQuery.toLowerCase();
         return (
           t.title.toLowerCase().includes(q) ||
-          t.description.toLowerCase().includes(q) ||
+          (t.description?.toLowerCase().includes(q) ?? false) ||
           t.tags.some((tag) => tag.toLowerCase().includes(q))
         );
       }

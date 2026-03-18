@@ -19,7 +19,8 @@ const STATUS_LABELS: Record<string, string> = {
   done: 'Done',
   idle: 'Idle',
   working: 'Working',
-  paused: 'Paused',
+  retrying: 'Retrying',
+  offline: 'Offline',
 };
 
 interface StatusBadgeProps {
