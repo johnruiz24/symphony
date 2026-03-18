@@ -363,8 +363,11 @@
 
             if (frameNumEl) frameNumEl.textContent = currentFrame;
             if (frameImageEl) {
-                frameImageEl.src = `screenshots/${frame.file}`;
+                const newSrc = `screenshots/${frame.file}`;
+                console.log('Setting image src to:', newSrc);
+                frameImageEl.src = newSrc;
                 frameImageEl.alt = frame.title;
+                console.log('Image src is now:', frameImageEl.src);
             }
 
             const frameTitleEl = document.getElementById('frameTitle');
