@@ -1,0 +1,24 @@
+Running ExUnit with seed: 550549, max_cases: 1
+
+
+SymphonyElixir.JiraPlanPublisherTest [test/symphony_elixir/jira_plan_publisher_test.exs]
+  * test publish_plan creates one jira issue per checked item [L#30]  * test publish_plan creates one jira issue per checked item (5.1ms) [L#30]
+  * test extract_publish_items keeps checked checklist entries only [L#13]  * test extract_publish_items keeps checked checklist entries only (0.1ms) [L#13]
+
+SymphonyElixir.ExtensionsTest [test/symphony_elixir/extensions_test.exs]
+  * test phoenix observability api preserves 405, 404, and unavailable behavior [L#487]  * test phoenix observability api preserves 405, 404, and unavailable behavior (101.1ms) [L#487]
+  * test workflow store init stops on missing workflow file [L#165]  * test workflow store init stops on missing workflow file (13.1ms) [L#165]
+  * test workflow store reloads changes, keeps last good workflow, and falls back when stopped [L#139]  * test workflow store reloads changes, keeps last good workflow, and falls back when stopped (52.3ms) [L#139]
+  * test tracker delegates to memory and linear adapters [L#219]  * test tracker delegates to memory and linear adapters (32.8ms) [L#219]
+  * test dashboard liveview renders an unavailable state without crashing [L#656]  * test dashboard liveview renders an unavailable state without crashing (202.4ms) [L#656]
+  * test phoenix observability api preserves state, issue, and refresh responses [L#379]  * test phoenix observability api preserves state, issue, and refresh responses (27.5ms) [L#379]
+  * test workflow store start_link and poll callback cover missing-file error paths [L#172]  * test workflow store start_link and poll callback cover missing-file error paths (3036.1ms) [L#172]
+  * test dashboard bootstraps liveview from embedded static assets [L#537]  * test dashboard bootstraps liveview from embedded static assets (27.1ms) [L#537]
+  * test jira adapter delegates to jira client module [L#243]  * test jira adapter delegates to jira client module (17.6ms) [L#243]
+  * test dashboard liveview renders and refreshes over pubsub [L#580]  * test dashboard liveview renders and refreshes over pubsub (15.4ms) [L#580]
+  * test phoenix observability api preserves snapshot timeout behavior [L#523]  * test phoenix observability api preserves snapshot timeout behavior (5.6ms) [L#523]
+  * test http server serves embedded assets, accepts form posts, and rejects invalid hosts [L#667]  * test http server serves embedded assets, accepts form posts, and rejects invalid hosts (224.4ms) [L#667]
+  * test linear adapter delegates reads and validates mutation responses [L#265]  * test linear adapter delegates reads and validates mutation responses (2.4ms) [L#265]
+
+Finished in 5.4 seconds (1.6s async, 3.8s sync)
+15 tests, 0 failures

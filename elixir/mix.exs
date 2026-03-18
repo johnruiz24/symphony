@@ -40,6 +40,13 @@ defmodule SymphonyElixir.MixProject do
           SymphonyElixirWeb.StaticAssets,
           SymphonyElixirWeb.Router,
           SymphonyElixirWeb.Router.Helpers,
+          SymphonyElixirWeb.TaskController,
+          SymphonyElixirWeb.AgentController,
+          SymphonyElixirWeb.EventController,
+          SymphonyElixirWeb.TaskPresenter,
+          SymphonyElixirWeb.HealthController,
+          SymphonyElixirWeb.CorsPlug,
+          SymphonyElixir.TaskStore,
           Mix.Tasks.Jira.Plan.Publish
         ]
       ],

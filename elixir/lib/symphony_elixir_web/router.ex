@@ -14,6 +14,10 @@ defmodule SymphonyElixirWeb.Router do
     plug(:put_secure_browser_headers)
   end
 
+  pipeline :api_cors do
+    plug(SymphonyElixirWeb.CorsPlug)
+  end
+
   scope "/", SymphonyElixirWeb do
     get("/dashboard.css", StaticAssetController, :dashboard_css)
     get("/vendor/phoenix_html/phoenix_html.js", StaticAssetController, :phoenix_html_js)
@@ -27,6 +31,25 @@ defmodule SymphonyElixirWeb.Router do
     live("/", DashboardLive, :index)
   end
 
+  # Frontend POC API: Task CRUD, Agent state, SSE events
+  scope "/api/v1", SymphonyElixirWeb do
+    pipe_through(:api_cors)
+
+    get("/health", HealthController, :index)
+
+    get("/tasks", TaskController, :index)
+    post("/tasks", TaskController, :create)
+    get("/tasks/:id", TaskController, :show)
+    patch("/tasks/:id", TaskController, :update)
+    delete("/tasks/:id", TaskController, :delete)
+    post("/tasks/:id/reassign", TaskController, :reassign)
+
+    get("/agents", AgentController, :index)
+
+    get("/events", EventController, :stream)
+  end
+
+  # Existing observability API
   scope "/", SymphonyElixirWeb do
     get("/api/v1/state", ObservabilityApiController, :state)
 

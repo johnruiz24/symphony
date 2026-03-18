@@ -1,0 +1,23 @@
+version: "3.8"
+
+# Docker Compose for Symphony E2E testing infrastructure.
+# Provides DynamoDB Local for persistence testing.
+#
+# Usage:
+#   docker compose up -d          # Start services
+#   docker compose down           # Stop services
+#   docker compose logs -f        # View logs
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: symphony-dynamodb-local
+    ports:
+      - "${DYNAMODB_PORT:-8000}:8000"
+    command: ["-jar", "DynamoDBLocal.jar", "-inMemory", "-sharedDb"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/shell/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped

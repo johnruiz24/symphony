@@ -1,0 +1,263 @@
+================================================================================
+SYMPHONY PROJECT ANALYSIS - COMPLETE
+================================================================================
+
+Date: March 18, 2026
+Branch: feat/explore
+Analysis Type: Complete Architecture Review for React Frontend Integration
+
+================================================================================
+QUESTIONS ANSWERED
+================================================================================
+
+1. PROJECT STRUCTURE
+   Location: /Users/john.ruiz/.claude/worktrees/symphony/feat-explore/
+   Main Elixir Code: elixir/lib/
+   Frontend Code: elixir/lib/symphony_elixir_web/
+   Static Assets: elixir/priv/static/
+   
+   Key Files:
+   - elixir/lib/symphony_elixir/orchestrator.ex (52KB) - CORE STATE MACHINE
+   - elixir/lib/symphony_elixir_web/live/dashboard_live.ex (330 lines) - CURRENT UI
+   - elixir/lib/symphony_elixir_web/presenter.ex (200 lines) - API DATA MODELS
+   - elixir/priv/static/dashboard.css (8KB) - DESIGN SYSTEM
+   - elixir/mix.exs - Dependencies
+
+2. CURRENT FRONTEND
+   Technology: Phoenix LiveView 1.1.0 + Phoenix 1.8.0
+   Framework: ZERO JavaScript frameworks (no React, Vue, Angular, Svelte)
+   HTTP Server: Bandit (modern Erlang HTTP server)
+   Real-time: Phoenix PubSub via WebSocket
+   Templating: HEEx (server-side only, no client JS)
+   CSS: Single file (8KB), vanilla CSS with variables
+   JavaScript: Minimal (~15KB Phoenix client library)
+   
+   Status: Server-rendered observability dashboard with real-time updates
+
+3. API PATTERNS
+   Three JSON endpoints:
+   - GET /api/v1/state → Full orchestration state (metrics, running, retrying, tokens)
+   - GET /api/v1/:issue_id → Per-issue detail view
+   - POST /api/v1/refresh → Trigger immediate poll cycle
+   
+   Optional endpoint (to be added):
+   - GET /api/v1/events → Server-Sent Events for real-time updates
+   
+   All responses are JSON with predictable schema defined in presenter.ex
+   All data is in-memory (no database), state is ephemeral
+
+4. DYNAMODB INTEGRATION
+   Status: NONE - No AWS integration currently
+   Current Storage: In-memory GenServer state only
+   Persistence: None (state lost on restart)
+   Implication: React frontend can be read-only observer
+   
+   Symphony uses:
+   - Local state (GenServer)
+   - Filesystem workspaces
+   - Linear/Jira trackers
+   - SSH workers (for remote execution)
+
+5. CLAUDE.md GUIDANCE
+   Status: NO PROJECT-LEVEL CLAUDE.md EXISTS
+   Guidance comes from:
+   - elixir/AGENTS.md - Code conventions
+   - elixir/README.md - Setup instructions
+   - ARCHITECTURE.md - Technical details
+   
+   Key Rules (from AGENTS.md):
+   - All public functions must have @spec annotations
+   - 100% test coverage (excluding infrastructure modules)
+   - Keep implementation aligned with SPEC.md
+   - Workspace safety is critical
+   - Follow existing module/style patterns
+
+6. BUILD & TEST SETUP
+   Build System: Mix (Elixir) + Makefile
+   
+   Quick Commands:
+   cd elixir
+   mix setup           # Install dependencies
+   mix build           # Create bin/symphony executable
+   make all            # Full quality gate (fmt, lint, coverage, dialyzer)
+   
+   Test Commands:
+   make test           # Unit tests
+   make coverage       # Coverage report (100% threshold)
+   make e2e            # Live E2E with real Linear + SSH
+   
+   Run Commands:
+   ./bin/symphony ./WORKFLOW.md                # Production
+   ./bin/symphony --port 4000 ./WORKFLOW.md    # With dashboard on port 4000
+   
+   Dependencies:
+   - Phoenix 1.8.0
+   - Phoenix LiveView 1.1.0
+   - Bandit 1.8
+   - Jason 1.4 (JSON)
+   - Yaml_elixir 2.12 (YAML parsing)
+   - Req 0.5 (HTTP client)
+   - Credo, Dialyxir (quality tools)
+
+================================================================================
+ANALYSIS DOCUMENTS CREATED
+================================================================================
+
+1. REACT_INTEGRATION_PLAN.md (14KB)
+   - Full React integration strategy (3 options: full replacement, parallel, enhancement)
+   - Detailed API contract with examples
+   - Real-time architecture (WebSocket vs SSE vs polling)
+   - React component structure proposal
+   - Elixir-side changes needed
+   - Build integration strategy
+   - Migration phases (4 weeks)
+   - Testing strategy
+
+2. REACT_QUICK_START.md (12KB)
+   - Copy-paste TypeScript interfaces
+   - Ready-to-use React hooks (fetch state, real-time updates)
+   - Utility functions (formatters, styling)
+   - Minimal React components (MetricCard, TableRow)
+   - CSS color scheme
+   - Step-by-step project setup
+   - Common development tasks
+   - Troubleshooting guide
+
+3. ARCHITECTURE.md (24KB) - Already Exists
+   - Complete technical analysis
+   - 15 key architectural patterns
+   - Full project structure
+   - Frontend component breakdown
+   - State machine deep dive
+
+4. RESEARCH_INDEX.md - Already Exists
+   - Index of all documentation
+   - Quick start pointers
+
+================================================================================
+KEY FINDINGS
+================================================================================
+
+STRENGTHS FOR REACT INTEGRATION:
+✓ API is stable and well-documented
+✓ All data in-memory (no database coupling)
+✓ PubSub is simple (single channel, predictable)
+✓ No legacy baggage (clean codebase)
+✓ State machine is well-designed
+✓ Current CSS is minimal and can be replaced
+
+CHALLENGES FOR REACT INTEGRATION:
+✗ Separate build pipeline (npm + mix)
+✗ Need to handle real-time updates (WebSocket or SSE)
+✗ Asset versioning and cache-busting
+✗ Development experience (two dev servers)
+✗ API doesn't persist state (no historical data)
+
+RECOMMENDED PATH:
+1. Build React SPA (Vite + React + TypeScript)
+2. Deploy to elixir/priv/static/ (bundled with Elixir)
+3. Add SSE endpoint for real-time updates (simple, HTTP-based)
+4. Keep API endpoints unchanged
+5. Phase out LiveView gradually
+
+TIMELINE: 3-4 weeks
+- Week 1: Setup Vite, basic React, component scaffolding
+- Week 2: Implement all dashboard components, styling
+- Week 3: Real-time integration, E2E tests
+- Week 4: Polish, optimization, documentation
+
+RISK LEVEL: LOW (API is stable, can run in parallel)
+
+================================================================================
+PRACTICAL DETAILS FOR REACT DEV
+================================================================================
+
+API Endpoint: GET /api/v1/state
+Response includes:
+- counts.running (metric card)
+- counts.retrying (metric card)
+- running[] array (table data)
+  - issue_identifier
+  - state (status badge)
+  - turn_count
+  - tokens.total_tokens
+  - last_event_at (timestamp)
+- retrying[] array (retry table data)
+  - attempt, due_at, error
+- codex_totals (metric cards)
+  - input_tokens, output_tokens, total_tokens, seconds_running
+- rate_limits (pre-formatted JSON)
+
+Real-time Updates (Current):
+- Phoenix PubSub broadcasts ":observability_updated" event
+- LiveView receives and re-fetches state
+- For React: either poll or implement SSE endpoint
+
+State Machine:
+- Orchestrator (GenServer) maintains issue state
+- Issues cycle: Polling → Claimed → Running → Completed → Retry/Terminal
+- Max concurrent agents: configurable
+- Poll interval: configurable (default 5s)
+
+Current Dashboard UI:
+- Hero card (title + live status)
+- 4 metric cards (running, retrying, tokens, runtime)
+- Rate limits section
+- Running sessions table (live updates)
+- Retry queue table
+
+Current Design System:
+- Accent color: #10a37f (teal)
+- Background: #f7f7f8 (light gray)
+- Text: #202123 (dark gray)
+- Danger: #b42318 (red)
+- Shadows + borders defined as CSS variables
+- Single-column responsive layout
+
+================================================================================
+FILES FOR REACT DEVELOPERS
+================================================================================
+
+Essential (MUST READ):
+- REACT_INTEGRATION_PLAN.md (this approach + timeline)
+- elixir/lib/symphony_elixir_web/presenter.ex (API shapes)
+- elixir/lib/symphony_elixir_web/controllers/observability_api_controller.ex (API impl)
+- elixir/priv/static/dashboard.css (design system)
+
+Good to Read:
+- elixir/lib/symphony_elixir_web/live/dashboard_live.ex (current UI logic)
+- elixir/lib/symphony_elixir_web/router.ex (routes)
+- elixir/lib/symphony_elixir/http_server.ex (HTTP setup)
+
+Reference:
+- ARCHITECTURE.md (deep technical details)
+- REACT_QUICK_START.md (copy/paste code)
+- elixir/AGENTS.md (code conventions)
+- elixir/README.md (setup instructions)
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. READ: REACT_INTEGRATION_PLAN.md (full strategy)
+2. READ: REACT_QUICK_START.md (practical setup)
+3. STUDY: elixir/lib/symphony_elixir_web/presenter.ex (API contract)
+4. SETUP: Follow "Project Setup Steps" in REACT_QUICK_START.md
+5. BUILD: Start with Phase 1 (parallel React dashboard)
+6. TEST: Run against real Symphony instances
+7. MIGRATE: Phase 2-4 (feature parity, real-time, cutover)
+
+================================================================================
+CONTACT POINT
+================================================================================
+
+If questions about:
+- API contract → Check presenter.ex
+- Architecture → Check ARCHITECTURE.md
+- Setup → Check elixir/README.md
+- React patterns → Check REACT_QUICK_START.md
+- Integration strategy → Check REACT_INTEGRATION_PLAN.md
+
+Status: ANALYSIS COMPLETE - Ready to begin React implementation
+
+================================================================================

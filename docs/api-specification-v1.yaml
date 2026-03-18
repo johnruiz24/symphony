@@ -1,0 +1,747 @@
+openapi: "3.1.0"
+info:
+  title: Symphony Frontend POC - Backend API
+  version: "1.0.0"
+  description: |
+    REST + SSE API for the Symphony Frontend POC.
+    Serves as the contract between the React SPA (port 3000) and the
+    Elixir backend (port 4000).
+
+    ## Design Decisions
+    - DynamoDB is the canonical task store (Linear/Jira are optional integrations later).
+    - Orchestrator GenServer is the authority for agent state (read-only projections).
+    - SSE delivers real-time events; React falls back to polling on disconnect.
+    - Queue-based reassignment (no capacity blocking).
+    - All timestamps are ISO 8601 UTC.
+    - UUIDs (v4) for all entity IDs.
+
+    ## Error Convention
+    All error responses use:
+    ```json
+    { "error": { "code": "<snake_case>", "message": "<human readable>" } }
+    ```
+
+servers:
+  - url: http://localhost:4000
+    description: Local Elixir backend
+
+tags:
+  - name: Tasks
+    description: Task CRUD and lifecycle management (DynamoDB-backed)
+  - name: Agents
+    description: Agent state projections from the Orchestrator GenServer
+  - name: Events
+    description: Server-Sent Events for real-time UI updates
+  - name: Health
+    description: Liveness and readiness probes
+
+paths:
+  # ---------------------------------------------------------------------------
+  # Health
+  # ---------------------------------------------------------------------------
+  /api/v1/health:
+    get:
+      operationId: getHealth
+      tags: [Health]
+      summary: Liveness check
+      description: Returns 200 if the Elixir node is up and the Orchestrator GenServer is alive.
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, orchestrator, timestamp]
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+                  orchestrator:
+                    type: string
+                    enum: [running, unavailable]
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  # ---------------------------------------------------------------------------
+  # Tasks
+  # ---------------------------------------------------------------------------
+  /api/v1/tasks:
+    get:
+      operationId: listTasks
+      tags: [Tasks]
+      summary: List tasks with optional filters
+      description: |
+        Returns tasks from DynamoDB. Without filters, returns all tasks
+        (capped at 100 for POC). Supports filtering by status, assignee,
+        and priority.
+
+        **DynamoDB access pattern:** GSI1 query when filtering by status,
+        full scan otherwise (acceptable for POC scale of ~100 tasks).
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: "#/components/schemas/TaskStatus"
+          description: Filter by task status
+        - name: assignee
+          in: query
+          schema:
+            type: string
+          description: Filter by assigned agent ID (alias for assigned_agent)
+        - name: priority
+          in: query
+          schema:
+            $ref: "#/components/schemas/TaskPriority"
+          description: Filter by priority level
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+          description: Max number of tasks to return
+        - name: cursor
+          in: query
+          schema:
+            type: string
+          description: Opaque pagination cursor (DynamoDB LastEvaluatedKey, base64-encoded)
+      responses:
+        "200":
+          description: Task list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Task"
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                      next_cursor:
+                        type: string
+                        nullable: true
+                        description: Null when no more pages
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+    post:
+      operationId: createTask
+      tags: [Tasks]
+      summary: Create a new task
+      description: |
+        Creates a task in DynamoDB with status `backlog`.
+        Publishes a `task_created` event via PubSub (consumed by SSE).
+
+        **Source tracking:** The optional `source` field records where the
+        task originated (manual UI, future Jira sync, etc.).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                description:
+                  type: string
+                  maxLength: 4096
+                priority:
+                  $ref: "#/components/schemas/TaskPriority"
+                  default: medium
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  maxItems: 20
+                source:
+                  type: string
+                  description: Origin of the task (e.g. "manual", "jira", "linear")
+                  default: manual
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Task"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /api/v1/tasks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Task UUID
+
+    get:
+      operationId: getTask
+      tags: [Tasks]
+      summary: Get a single task by ID
+      responses:
+        "200":
+          description: Task found
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Task"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+    patch:
+      operationId: updateTask
+      tags: [Tasks]
+      summary: Update task fields
+      description: |
+        Partial update of mutable task fields. Status transitions are
+        validated against the state machine:
+        ```
+        backlog -> todo -> in_progress -> done
+                            ^--- (reassign keeps in_progress)
+        ```
+        Publishes `task_updated` via PubSub.
+
+        **Optimistic locking:** Uses DynamoDB conditional write on `version`
+        field. Returns 409 if version mismatch (concurrent edit).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                description:
+                  type: string
+                  maxLength: 4096
+                status:
+                  $ref: "#/components/schemas/TaskStatus"
+                priority:
+                  $ref: "#/components/schemas/TaskPriority"
+                tags:
+                  type: array
+                  items:
+                    type: string
+                version:
+                  type: integer
+                  description: Required for optimistic locking. Send the version you read.
+              minProperties: 1
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Task"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Version conflict (concurrent edit)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+    delete:
+      operationId: deleteTask
+      tags: [Tasks]
+      summary: Delete a task
+      description: Hard-deletes the task from DynamoDB. Publishes `task_deleted` via PubSub.
+      responses:
+        "204":
+          description: Deleted (no content)
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /api/v1/tasks/{id}/reassign:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+
+    post:
+      operationId: reassignTask
+      tags: [Tasks]
+      summary: Reassign a task to a different agent
+      description: |
+        Drag-drop assignment handler. Adds the task to the target agent's
+        queue. The agent executes when its current task completes.
+
+        **Flow:**
+        1. Validate agent exists (from Orchestrator snapshot)
+        2. Update `assigned_agent` in DynamoDB
+        3. Publish `task_reassigned` via PubSub
+        4. Orchestrator re-queues task on next tick
+
+        **Queue-based model:** Always succeeds (no capacity blocking).
+        The task is queued, not immediately executed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agent_id]
+              properties:
+                agent_id:
+                  type: string
+                  description: Target agent ID (must be a known agent from GET /agents)
+      responses:
+        "200":
+          description: Task reassigned (queued)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid agent (not found or offline)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  # ---------------------------------------------------------------------------
+  # Agents
+  # ---------------------------------------------------------------------------
+  /api/v1/agents:
+    get:
+      operationId: listAgents
+      tags: [Agents]
+      summary: List all active agents with workload
+      description: |
+        Returns a real-time projection of all agents from the Orchestrator
+        GenServer snapshot. This is a read-only view - agents are not
+        stored in DynamoDB.
+
+        **Data source:** `Orchestrator.snapshot/2` -> running entries
+        grouped by worker_host/agent identity.
+
+        Each agent includes:
+        - Current workload (active task count, queued count, completed count)
+        - Status (idle, working, retrying)
+        - Uptime since first task dispatched
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Agent"
+                  meta:
+                    type: object
+                    properties:
+                      count:
+                        type: integer
+                      snapshot_at:
+                        type: string
+                        format: date-time
+                        description: When the Orchestrator snapshot was taken
+        "503":
+          description: Orchestrator unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  # ---------------------------------------------------------------------------
+  # Events (SSE)
+  # ---------------------------------------------------------------------------
+  /api/v1/events:
+    get:
+      operationId: streamEvents
+      tags: [Events]
+      summary: SSE stream for real-time updates
+      description: |
+        Long-lived HTTP connection using Server-Sent Events (text/event-stream).
+        The client opens this connection on page load and receives events
+        as task/agent state changes.
+
+        **Connection lifecycle:**
+        1. Client opens GET /api/v1/events
+        2. Server sends `event: connected` with connection ID
+        3. Server sends `event: snapshot` with full current state
+        4. Server pushes incremental events as changes occur
+        5. Client reconnects automatically on disconnect (EventSource spec)
+
+        **Event types:**
+        - `connected` - Initial handshake with connection metadata
+        - `snapshot` - Full state dump (sent on connect and periodically)
+        - `task_created` - New task added
+        - `task_updated` - Task fields changed (status, assignee, etc.)
+        - `task_deleted` - Task removed
+        - `task_reassigned` - Task moved to different agent
+        - `agent_state_changed` - Agent workload/status changed
+        - `heartbeat` - Keep-alive every 15s (prevents proxy timeouts)
+
+        **Reconnection:** If the client sends `Last-Event-ID` header,
+        the server replays missed events (best-effort, 60s window).
+
+        **Fallback:** If SSE drops, React polls GET /api/v1/tasks + GET /api/v1/agents
+        every 5-10 seconds until SSE reconnects.
+      parameters:
+        - name: Last-Event-ID
+          in: header
+          schema:
+            type: string
+          description: Last received event ID for reconnection replay
+      responses:
+        "200":
+          description: SSE stream opened
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  SSE format:
+                  ```
+                  id: <monotonic-event-id>
+                  event: <event-type>
+                  data: <JSON payload>
+                  ```
+
+  # ---------------------------------------------------------------------------
+  # Existing Endpoints (preserved)
+  # ---------------------------------------------------------------------------
+  /api/v1/state:
+    get:
+      operationId: getState
+      tags: [Health]
+      summary: "[Existing] Full orchestrator state snapshot"
+      description: |
+        Existing endpoint from the observability API. Returns running/retrying
+        entries, codex totals, and rate limits. Preserved for backward
+        compatibility with the LiveView dashboard.
+      responses:
+        "200":
+          description: Orchestrator state
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/refresh:
+    post:
+      operationId: refreshOrchestrator
+      tags: [Health]
+      summary: "[Existing] Trigger an immediate poll cycle"
+      responses:
+        "202":
+          description: Refresh scheduled
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+# =============================================================================
+# Components
+# =============================================================================
+components:
+  schemas:
+    # -------------------------------------------------------------------------
+    # Task
+    # -------------------------------------------------------------------------
+    Task:
+      type: object
+      required: [id, title, status, priority, version, created_at, updated_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: DynamoDB partition key
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        status:
+          $ref: "#/components/schemas/TaskStatus"
+        priority:
+          $ref: "#/components/schemas/TaskPriority"
+        assigned_agent:
+          type: string
+          nullable: true
+          description: Agent ID if assigned, null if unassigned
+        tags:
+          type: array
+          items:
+            type: string
+        source:
+          type: string
+          description: Origin of the task (manual, jira, linear)
+        version:
+          type: integer
+          description: Monotonically increasing version for optimistic locking
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TaskStatus:
+      type: string
+      enum: [backlog, todo, in_progress, done]
+      description: |
+        Task lifecycle state machine:
+        ```
+        backlog --> todo --> in_progress --> done
+        ```
+        Transitions are validated server-side.
+
+    TaskPriority:
+      type: string
+      enum: [low, medium, high, urgent]
+
+    # -------------------------------------------------------------------------
+    # Agent
+    # -------------------------------------------------------------------------
+    Agent:
+      type: object
+      required: [id, name, status, workload]
+      properties:
+        id:
+          type: string
+          description: Unique agent identifier (derived from worker_host or issue_id)
+        name:
+          type: string
+          description: Human-readable agent name
+        status:
+          $ref: "#/components/schemas/AgentStatus"
+        worker_host:
+          type: string
+          nullable: true
+          description: SSH host or "local" for the agent worker
+        workload:
+          $ref: "#/components/schemas/AgentWorkload"
+        current_task_id:
+          type: string
+          nullable: true
+          description: ID of the currently executing task (convenience field)
+        current_task:
+          type: object
+          nullable: true
+          description: Currently executing task summary
+          properties:
+            issue_id:
+              type: string
+            issue_identifier:
+              type: string
+            state:
+              type: string
+            started_at:
+              type: string
+              format: date-time
+            turn_count:
+              type: integer
+            last_event:
+              type: string
+              nullable: true
+            tokens:
+              type: object
+              properties:
+                input_tokens:
+                  type: integer
+                output_tokens:
+                  type: integer
+                total_tokens:
+                  type: integer
+        uptime_seconds:
+          type: number
+          description: Seconds since the agent's first task was dispatched
+
+    AgentStatus:
+      type: string
+      enum: [idle, working, retrying, offline]
+
+    AgentWorkload:
+      type: object
+      required: [active, queued, completed]
+      properties:
+        active:
+          type: integer
+          description: Currently executing tasks
+        queued:
+          type: integer
+          description: Tasks waiting in queue
+        completed:
+          type: integer
+          description: Tasks finished in this session
+
+    # -------------------------------------------------------------------------
+    # SSE Event Payloads
+    # -------------------------------------------------------------------------
+    SSEEvent:
+      type: object
+      description: Generic SSE event envelope
+      required: [id, event, data, timestamp]
+      properties:
+        id:
+          type: string
+          description: Monotonic event ID for Last-Event-ID reconnection
+        event:
+          type: string
+          enum:
+            - connected
+            - snapshot
+            - task_created
+            - task_updated
+            - task_deleted
+            - task_reassigned
+            - agent_state_changed
+            - heartbeat
+        data:
+          description: Event-specific JSON payload
+        timestamp:
+          type: string
+          format: date-time
+
+    SSEConnectedPayload:
+      type: object
+      properties:
+        connection_id:
+          type: string
+        server_time:
+          type: string
+          format: date-time
+
+    SSESnapshotPayload:
+      type: object
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Task"
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Agent"
+
+    SSETaskEventPayload:
+      type: object
+      description: Payload for task_created, task_updated, task_deleted, task_reassigned
+      properties:
+        task:
+          $ref: "#/components/schemas/Task"
+        previous_agent:
+          type: string
+          nullable: true
+          description: Only present on task_reassigned events
+
+    SSEAgentEventPayload:
+      type: object
+      description: Payload for agent_state_changed
+      properties:
+        agents:
+          type: array
+          items:
+            $ref: "#/components/schemas/Agent"
+          description: Full agent list snapshot (frontend replaces entire agent cache)
+
+    # -------------------------------------------------------------------------
+    # Error
+    # -------------------------------------------------------------------------
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code (snake_case)
+            message:
+              type: string
+              description: Human-readable error description
+            details:
+              type: object
+              additionalProperties: true
+              description: Field-level validation errors (key = field name, value = error messages)
+
+  # ---------------------------------------------------------------------------
+  # Reusable Responses
+  # ---------------------------------------------------------------------------
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: not_found
+              message: "Task not found"
+
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: validation_failed
+              message: "Task creation failed"
+              details:
+                title: ["can't be blank"]
+
+    ServiceUnavailable:
+      description: Backend service unavailable (DynamoDB or Orchestrator)
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error:
+              code: service_unavailable
+              message: "DynamoDB is unreachable"

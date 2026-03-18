@@ -1,0 +1,37 @@
+[
+  {
+    "id": "agent-alpha",
+    "name": "Alpha",
+    "status": "busy",
+    "capabilities": ["backend", "api", "security"],
+    "workload": 2
+  },
+  {
+    "id": "agent-beta",
+    "name": "Beta",
+    "status": "idle",
+    "capabilities": ["frontend", "react", "css"],
+    "workload": 0
+  },
+  {
+    "id": "agent-gamma",
+    "name": "Gamma",
+    "status": "busy",
+    "capabilities": ["backend", "database", "devops"],
+    "workload": 1
+  },
+  {
+    "id": "agent-delta",
+    "name": "Delta",
+    "status": "busy",
+    "capabilities": ["testing", "qa", "automation"],
+    "workload": 1
+  },
+  {
+    "id": "agent-epsilon",
+    "name": "Epsilon",
+    "status": "offline",
+    "capabilities": ["frontend", "mobile"],
+    "workload": 0
+  }
+]
