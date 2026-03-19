@@ -268,152 +268,152 @@
     <script>
         const frames = [
             {
-                file: "01-initial-kanban-board.png",
+                file: "01-frame-1.png",
                 title: "Initial Kanban Board Load",
                 desc: "System startup: Frontend loads the Kanban board with 16 tasks from the backend. Each task is displayed as a card with status, priority, and assigned agent."
             },
             {
-                file: "02-full-board-view.png",
+                file: "02-frame-2.png",
                 title: "Full Board View",
                 desc: "Complete view of the task management interface showing all 4 status columns (Backlog, To Do, In Progress, Done) and the agent strip on the right."
             },
             {
-                file: "03-create-task-clicked.png",
+                file: "03-frame-3.png",
                 title: "Create Task Interaction",
                 desc: "User clicks the 'Create Task' button. The form becomes active, ready for input of task title, description, and priority level."
             },
             {
-                file: "04-task-form-visible.png",
+                file: "04-frame-4.png",
                 title: "Task Form Visible",
                 desc: "The task creation form is displayed with input fields. User fills in task details before submission."
             },
             {
-                file: "05-task-created-board.png",
+                file: "05-frame-5.png",
                 title: "Task Created on Board",
                 desc: "New task appears on the Kanban board in the Backlog column. Real-time update from backend via SSE event."
             },
             {
-                file: "06-before-drag.png",
+                file: "06-frame-6.png",
                 title: "Before Drag - Task Selected",
                 desc: "Task is highlighted and ready for drag-drop interaction. User prepares to move it to a different status column."
             },
             {
-                file: "07-dragging.png",
+                file: "07-frame-7.png",
                 title: "During Drag Operation",
                 desc: "Task is being dragged across the board. The UI shows visual feedback during the drag animation."
             },
             {
-                file: "08-after-drag-in-progress.png",
+                file: "08-frame-8.png",
                 title: "After Status Change",
                 desc: "Task successfully moved to 'In Progress' column. Status update broadcasts to all connected clients via SSE."
             },
             {
-                file: "09-before-agent-assign.png",
+                file: "09-frame-9.png",
                 title: "Before Agent Assignment",
                 desc: "Task is positioned near the agent strip on the right side. Ready to be dragged onto an agent for assignment."
             },
             {
-                file: "10-during-agent-assign.png",
+                file: "10-frame-10.png",
                 title: "During Agent Assignment",
                 desc: "Task is being dragged toward an agent. The agent highlight shows it's a valid drop target."
             },
             {
-                file: "11-after-agent-assigned.png",
+                file: "11-frame-11.png",
                 title: "Agent Assignment Complete",
                 desc: "Task is now assigned to an agent. The card shows the agent name, and the agent's workload is updated."
             },
             {
-                file: "12-agent-workload-updated.png",
+                file: "12-frame-12.png",
                 title: "Agent Workload Updated",
                 desc: "The agent strip shows updated workload metrics. Task count and status for each agent is reflected in real-time."
             },
             {
-                file: "13-final-board-state.png",
+                file: "13-frame-13.png",
                 title: "Multiple Tasks on Board",
                 desc: "The board now displays the task in its assigned state with various other tasks in different statuses and assignments."
             },
             {
-                file: "14-task-completion.png",
+                file: "14-frame-14.png",
                 title: "Agent Strip Detail View",
                 desc: "Close-up of the agent strip showing individual agents (agent-alpha, agent-beta, agent-gamma) with their assigned task counts."
             },
             {
-                file: "15-system-overview.png",
+                file: "15-frame-15.png",
                 title: "Kanban Full Width",
                 desc: "Kanban board displayed at full width showing all columns balanced with tasks distributed across statuses and real-time synchronized state."
             },
             {
-                file: "16-priority-filter-low.png",
+                file: "16-frame-16.png",
                 title: "Priority Filter: Low Tasks",
                 desc: "Apply Priority filter showing only Low priority tasks. Board dynamically updates to display relevant tasks."
             },
             {
-                file: "17-demo-frame-17.png",
+                file: "17-frame-17.png",
                 title: "Scrolled Board View",
                 desc: "Scroll down to see more tasks on the board. Additional tasks become visible as user scrolls."
             },
             {
-                file: "18-demo-frame-18.png",
+                file: "18-frame-18.png",
                 title: "Board Scrolling Continued",
                 desc: "Continue scrolling to view more tasks and different board sections."
             },
             {
-                file: "19-demo-frame-19.png",
+                file: "19-frame-19.png",
                 title: "Task Details Visible",
                 desc: "More detailed view of tasks showing descriptions and metadata."
             },
             {
-                file: "20-demo-frame-20.png",
+                file: "20-frame-20.png",
                 title: "Bottom of Board",
                 desc: "Reached bottom of task list showing final tasks in the queue."
             },
             {
-                file: "21-demo-frame-21.png",
+                file: "21-frame-21.png",
                 title: "Agent Column View",
                 desc: "Agent strip prominently displayed showing all three agents and their workload distribution."
             },
             {
-                file: "22-demo-frame-22.png",
+                file: "22-frame-22.png",
                 title: "Task Assignment Status",
                 desc: "View showing various tasks assigned to different agents with current status."
             },
             {
-                file: "23-demo-frame-23.png",
+                file: "23-frame-23.png",
                 title: "In Progress Column Focus",
                 desc: "Focus on tasks currently In Progress across all agents."
             },
             {
-                file: "24-demo-frame-24.png",
+                file: "24-frame-24.png",
                 title: "Completed Tasks View",
                 desc: "Done column showing completed tasks with checkmarks and timestamps."
             },
             {
-                file: "25-demo-frame-25.png",
+                file: "25-frame-25.png",
                 title: "Agent Alpha Workload",
                 desc: "Detailed view of tasks assigned to agent-alpha including statuses and details."
             },
             {
-                file: "26-demo-frame-26.png",
+                file: "26-frame-26.png",
                 title: "Agent Beta Workload",
                 desc: "Tasks assigned to agent-beta showing distribution and current assignments."
             },
             {
-                file: "27-demo-frame-27.png",
+                file: "27-frame-27.png",
                 title: "Agent Gamma Workload",
                 desc: "Tasks for agent-gamma with workload metrics and task completion status."
             },
             {
-                file: "28-demo-frame-28.png",
+                file: "28-frame-28.png",
                 title: "Real-time Updates Active",
                 desc: "Board showing real-time updates as tasks are modified by SSE events."
             },
             {
-                file: "29-demo-frame-29.png",
+                file: "29-frame-29.png",
                 title: "Multiple Interactions",
                 desc: "Board state after multiple user interactions showing complex task distribution."
             },
             {
-                file: "30-demo-frame-30.png",
+                file: "30-frame-30.png",
                 title: "System Overview Complete",
                 desc: "Final comprehensive view showing all features working together: tasks, agents, assignments, and real-time updates."
             }
