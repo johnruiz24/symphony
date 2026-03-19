@@ -1,196 +1,0 @@
-
-18:34:06.250 [info] Compiling file system watcher for Mac...
-
-18:34:12.390 [info] Done.
-==> file_system
-Compiling 7 files (.ex)
-Generated file_system app
-==> floki
-Compiling 1 file (.xrl)
-Compiling 2 files (.erl)
-Compiling 30 files (.ex)
-Generated floki app
-==> mime
-Compiling 1 file (.ex)
-Generated mime app
-==> nimble_options
-Compiling 3 files (.ex)
-Generated nimble_options app
-==> fine
-Compiling 1 file (.ex)
-Generated fine app
-==> bunt
-Compiling 2 files (.ex)
-Generated bunt app
-==> plug_crypto
-Compiling 5 files (.ex)
-Generated plug_crypto app
-==> kday
-Compiling 1 file (.ex)
-Generated kday app
-==> hpax
-Compiling 4 files (.ex)
-Generated hpax app
-==> mint
-Compiling 1 file (.erl)
-Compiling 20 files (.ex)
-Generated mint app
-==> symphony_elixir
-===> Analyzing applications...
-===> Compiling yamerl
-==> date_time_parser
-Compiling 15 files (.ex)
-Compiling lib/combinators.ex (it's taking more than 10s)
-Generated date_time_parser app
-==> elixir_make
-Compiling 8 files (.ex)
-Generated elixir_make app
-==> decimal
-Compiling 4 files (.ex)
-Generated decimal app
-==> jason
-Compiling 10 files (.ex)
-Generated jason app
-==> solid
-Compiling 49 files (.ex)
-Generated solid app
-==> yaml_elixir
-Compiling 6 files (.ex)
-Generated yaml_elixir app
-==> symphony_elixir
-===> Analyzing applications...
-===> Compiling telemetry
-==> ecto
-Compiling 56 files (.ex)
-Generated ecto app
-==> thousand_island
-Compiling 18 files (.ex)
-Generated thousand_island app
-==> phoenix_html
-Compiling 6 files (.ex)
-Generated phoenix_html app
-==> phoenix_template
-Compiling 4 files (.ex)
-Generated phoenix_template app
-==> phoenix_pubsub
-Compiling 12 files (.ex)
-Generated phoenix_pubsub app
-==> credo
-Compiling 254 files (.ex)
-Generated credo app
-==> plug
-Compiling 1 file (.erl)
-Compiling 42 files (.ex)
-Generated plug app
-==> nimble_pool
-Compiling 2 files (.ex)
-Generated nimble_pool app
-==> finch
-Compiling 14 files (.ex)
-Generated finch app
-==> req
-Compiling 19 files (.ex)
-Generated req app
-==> cc_precompiler
-Compiling 3 files (.ex)
-Generated cc_precompiler app
-==> lazy_html
-Downloading precompiled NIF to /Users/john.ruiz/Library/Caches/elixir_make/lazy_html-nif-2.16-x86_64-apple-darwin-0.1.10.tar.gz
-Compiling 3 files (.ex)
-Generated lazy_html app
-==> websock
-Compiling 1 file (.ex)
-Generated websock app
-==> bandit
-Compiling 54 files (.ex)
-Generated bandit app
-==> websock_adapter
-Compiling 4 files (.ex)
-Generated websock_adapter app
-==> phoenix
-Compiling 74 files (.ex)
-Generated phoenix app
-==> phoenix_live_view
-Compiling 49 files (.ex)
-Generated phoenix_live_view app
-==> symphony_elixir
-Compiling 41 files (.ex)
-Generated symphony_elixir app
-Running ExUnit with seed: 580597, max_cases: 1
-
-
-SymphonyElixir.JiraPlanPublisherTest [test/symphony_elixir/jira_plan_publisher_test.exs]
-  * test extract_publish_items keeps checked checklist entries only [L#13]  * test extract_publish_items keeps checked checklist entries only (5.3ms) [L#13]
-  * test publish_plan creates one jira issue per checked item [L#30]  * test publish_plan creates one jira issue per checked item (1.8ms) [L#30]
-
-SymphonyElixir.ExtensionsTest [test/symphony_elixir/extensions_test.exs]
-  * test phoenix observability api preserves 405, 404, and unavailable behavior [L#487]  * test phoenix observability api preserves 405, 404, and unavailable behavior (127.5ms) [L#487]
-  * test phoenix observability api preserves snapshot timeout behavior [L#523]  * test phoenix observability api preserves snapshot timeout behavior (26.9ms) [L#523]
-  * test workflow store reloads changes, keeps last good workflow, and falls back when stopped [L#139]  * test workflow store reloads changes, keeps last good workflow, and falls back when stopped (93.4ms) [L#139]
-  * test dashboard liveview renders and refreshes over pubsub [L#580]  * test dashboard liveview renders and refreshes over pubsub (1688.5ms) [L#580]
-  * test phoenix observability api preserves state, issue, and refresh responses [L#379]  * test phoenix observability api preserves state, issue, and refresh responses (33.6ms) [L#379]
-  * test tracker delegates to memory and linear adapters [L#219]  * test tracker delegates to memory and linear adapters (58.2ms) [L#219]
-  * test linear adapter delegates reads and validates mutation responses [L#265]  * test linear adapter delegates reads and validates mutation responses (16.1ms) [L#265]
-  * test dashboard liveview renders an unavailable state without crashing [L#656]  * test dashboard liveview renders an unavailable state without crashing (31.8ms) [L#656]
-  * test dashboard bootstraps liveview from embedded static assets [L#537]  * test dashboard bootstraps liveview from embedded static assets (41.4ms) [L#537]
-  * test jira adapter delegates to jira client module [L#243]  * test jira adapter delegates to jira client module (38.0ms) [L#243]
-  * test http server serves embedded assets, accepts form posts, and rejects invalid hosts [L#667]  * test http server serves embedded assets, accepts form posts, and rejects invalid hosts (182.4ms) [L#667]
-  * test workflow store init stops on missing workflow file [L#165]  * test workflow store init stops on missing workflow file (22.1ms) [L#165]
-  * test workflow store start_link and poll callback cover missing-file error paths [L#172]  * test workflow store start_link and poll callback cover missing-file error paths (3060.9ms) [L#172]
-
-SymphonyElixir.CoreTest [test/symphony_elixir/core_test.exs]
-  * test app server startup command supports codex args override from workflow config [L#1559]  * test app server startup command supports codex args override from workflow config (5063.5ms) [L#1559]
-
-  1) test app server startup command supports codex args override from workflow config (SymphonyElixir.CoreTest)
-     test/symphony_elixir/core_test.exs:1559
-     match (=) failed
-     code:  assert {:ok, _result} = AppServer.run(workspace, "Fix workspace start args", issue)
-     left:  {:ok, _result}
-     right: {:error, :response_timeout}
-     stacktrace:
-       test/symphony_elixir/core_test.exs:1630: (test)
-
-  * test first abnormal worker exit waits before retrying [L#615]  * test first abnormal worker exit waits before retrying (882.5ms) [L#615]
-  * test app server startup payload uses configurable approval and sandbox settings from workflow config [L#1644]  * test app server startup payload uses configurable approval and sandbox settings from workflow config (1351.7ms) [L#1644]
-  * test stale retry timer messages do not consume newer retry entries [L#654]  * test stale retry timer messages do not consume newer retry entries (839.6ms) [L#654]
-  * test select_worker_host_for_test skips full ssh hosts under the shared per-host cap [L#724]  * test select_worker_host_for_test skips full ssh hosts under the shared per-host cap (26.3ms) [L#724]
-  * test workflow load accepts unterminated front matter with an empty prompt [L#202]  * test workflow load accepts unterminated front matter with an empty prompt (11.6ms) [L#202]
-  * test workflow load rejects non-map front matter [L#210]  * test workflow load rejects non-map front matter (9.3ms) [L#210]
-  * test config defaults and validation checks [L#4]  * test config defaults and validation checks (200.8ms) [L#4]
-  * test prompt builder normalizes nested date-like values, maps, and structs in issue fields [L#833]  * test prompt builder normalizes nested date-like values, maps, and structs in issue fields (68.0ms) [L#833]
-  * test agent runner forwards timestamped codex updates to recipient [L#1097]  * test agent runner forwards timestamped codex updates to recipient (2220.4ms) [L#1097]
-  * test prompt builder adds continuation guidance for retries [L#995]  * test prompt builder adds continuation guidance for retries (33.0ms) [L#995]
-  * test prompt builder default template handles missing issue body [L#914]  * test prompt builder default template handles missing issue body (25.2ms) [L#914]
-  * test prompt builder renders issue and attempt values from workflow template [L#785]  * test prompt builder renders issue and attempt values from workflow template (19.6ms) [L#785]
-  * test in-repo WORKFLOW.md renders correctly [L#963]  * test in-repo WORKFLOW.md renders correctly (25.9ms) [L#963]
-  * test linear issue state reconciliation fetch with no running issues is a no-op [L#241]  * test linear issue state reconciliation fetch with no running issues is a no-op (3.3ms) [L#241]
-  * test agent runner stops continuing once agent.max_turns is reached [L#1316]  * test agent runner stops continuing once agent.max_turns is reached (1778.0ms) [L#1316]
-  * test workflow load accepts prompt-only files without front matter [L#194]  * test workflow load accepts prompt-only files without front matter (6.1ms) [L#194]
-  * test linear assignee resolves from LINEAR_ASSIGNEE env var [L#154]  * test linear assignee resolves from LINEAR_ASSIGNEE env var (12.2ms) [L#154]
-  * test prompt builder uses a sensible default template when workflow prompt is blank [L#890]  * test prompt builder uses a sensible default template when workflow prompt is blank (45.8ms) [L#890]
-  * test app server starts with workspace cwd and expected startup command [L#1413]  * test app server starts with workspace cwd and expected startup command (1388.5ms) [L#1413]
-  * test normal worker exit schedules active-state continuation retry [L#535]  * test normal worker exit schedules active-state continuation retry (774.9ms) [L#535]
-  * test agent runner keeps workspace after successful codex run [L#1013]  * test agent runner keeps workspace after successful codex run (1864.8ms) [L#1013]
-  * test agent runner continues with a follow-up turn while the issue remains active [L#1185]  * test agent runner continues with a follow-up turn while the issue remains active (1716.4ms) [L#1185]
-  * test prompt builder reports workflow load failures separately from template parse errors [L#933]  * test prompt builder reports workflow load failures separately from template parse errors (3.5ms) [L#933]
-  * test workflow file path resolves from app env when set [L#182]  * test workflow file path resolves from app env when set (7.1ms) [L#182]
-  * test non-active issue state stops running agent without cleaning workspace [L#245]  * test non-active issue state stops running agent without cleaning workspace (20.7ms) [L#245]
-  * test prompt builder uses strict variable rendering [L#854]  * test prompt builder uses strict variable rendering (13.4ms) [L#854]
-  * test select_worker_host_for_test keeps the preferred ssh host when it still has capacity [L#755]  * test select_worker_host_for_test keeps the preferred ssh host when it still has capacity (31.2ms) [L#755]
-  * test SymphonyElixir.start_link delegates to the orchestrator [L#217]  * test SymphonyElixir.start_link delegates to the orchestrator (30.0ms) [L#217]
-  * test workflow file path defaults to WORKFLOW.md in the current working directory when app env is unset [L#170]  * test workflow file path defaults to WORKFLOW.md in the current working directory when app env is unset (6.2ms) [L#170]
-  * test select_worker_host_for_test returns no_worker_capacity when every ssh host is full [L#739]  * test select_worker_host_for_test returns no_worker_capacity when every ssh host is full (26.4ms) [L#739]
-  * test fetch issues by states with empty state set is a no-op [L#781]  * test fetch issues by states with empty state set is a no-op (11.9ms) [L#781]
-  * test prompt builder renders issue datetime fields without crashing [L#807]  * test prompt builder renders issue datetime fields without crashing (9.9ms) [L#807]
-  * test terminal issue state stops running agent and cleans workspace [L#308]  * test terminal issue state stops running agent and cleans workspace (53.7ms) [L#308]
-  * test reconcile updates running issue state for active issues [L#449]  * test reconcile updates running issue state for active issues (17.9ms) [L#449]
-  * test current WORKFLOW.md file is valid and complete [L#109]  * test current WORKFLOW.md file is valid and complete (24.0ms) [L#109]
-  * test prompt builder surfaces invalid template content with prompt context [L#873]  * test prompt builder surfaces invalid template content with prompt context (8.4ms) [L#873]
-  * test missing running issues stop active agents without cleaning the workspace [L#371]  * test missing running issues stop active agents without cleaning the workspace (196.5ms) [L#371]
-  * test manual refresh coalesces repeated requests and ignores superseded ticks [L#694]  * test manual refresh coalesces repeated requests and ignores superseded ticks (5.6ms) [L#694]
-  * test linear api token resolves from LINEAR_API_KEY env var [L#136]  * test linear api token resolves from LINEAR_API_KEY env var (27.1ms) [L#136]
-  * test abnormal worker exit increments retry attempt progressively [L#575]  * test abnormal worker exit increments retry attempt progressively (801.1ms) [L#575]
-  * test reconcile stops running issue when it is reassigned away from this worker [L#488]  * test reconcile stops running issue when it is reassigned away from this worker (19.7ms) [L#488]
-
-Finished in 29.6 seconds (4.3s async, 25.2s sync)
-57 tests, 1 failure
